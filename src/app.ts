@@ -15,5 +15,6 @@ app.get('/test/get', apiController.getTest);
 app.post('/test/post', apiController.postTest);
 app.post('/test/token/generate', apiController.tokenTestGenerate);
 app.post('/test/token/verify', authenticateToken, apiController.tokenTestVerify);
+app.get('/test/db', apiController.verifyDatabaseConnection);
 
 export default app;
