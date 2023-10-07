@@ -20,6 +20,7 @@ app.post('/test/token/generate', apiController.tokenTestGenerate);
 app.post('/test/token/verify', authenticateToken, apiController.tokenTestVerify);
 app.get('/test/db', apiController.verifyDatabaseConnection);
 
+//AUTH
 app.post('/api/register', authController.registerUser);
-
+app.post('/api/login', authController.loginUser);
 export default app;
