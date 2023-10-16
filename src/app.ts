@@ -1,5 +1,6 @@
 import express, { Express } from "express";
 import cors from 'cors';
+import cookieParser from "cookie-parser";
 import * as apiController from './controllers/api';
 import * as authController from './controllers/auth';
 import authenticateToken from "./middleware/authenticate-token";
@@ -10,6 +11,7 @@ const app: Express = express();
 //Configuration
 app.use(express.json());
 app.use(cors());
+app.use(cookieParser());
 
 //Endpoints
 
@@ -23,4 +25,5 @@ app.get('/test/db', apiController.verifyDatabaseConnection);
 //AUTH
 app.post('/api/register', authController.registerUser);
 app.post('/api/login', authController.loginUser);
+app.post('/api/refreshToken', authController.refreshToken);
 export default app;
