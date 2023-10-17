@@ -55,7 +55,7 @@ export const loginUser = (req: Request, res: Response) => {
             })
 
             return res
-                .cookie('refresh-token', generateToken(result[0].id, '1d'), {httpOnly: true, sameSite: 'strict'})
+                .cookie('refresh-token', generateToken(result[0].id, '1d'), {secure: true, sameSite: 'none'})
                 .json({
                     message: `Witamy, ${username}!`,
                     token: generateToken(result[0].id),

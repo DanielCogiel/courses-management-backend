@@ -9,7 +9,7 @@ const authenticateToken = (req: any, res: Response, next: NextFunction) => {
     const refreshToken = req.cookies['refresh-token'];
 
     if (!token && !refreshToken)
-        res.sendStatus(401);
+        return res.sendStatus(401);
 
     jwt.verify(token as string, TOKEN_KEY as string, (err: any, tokenData: any) => {
         if (err) {
@@ -17,13 +17,12 @@ const authenticateToken = (req: any, res: Response, next: NextFunction) => {
                 return res.status(401).json({message: 'Odmowa dostępu. Brak tokenu.'});
             try {
                 const decodedRefreshToken: any = jwt.verify(refreshToken, TOKEN_KEY as string);
-                const newAccessToken = generateToken(decodedRefreshToken.userId);
-
-                return res
-                    .cookie('refresh-token', refreshToken, {httpOnly: true, sameSite: 'strict'})
-                    .json({token: newAccessToken});
+                res.locals.token  = generateToken(decodedRefreshToken?.userId) as string;
+                res.locals.userId = decodedRefreshToken?.userId;
+                next();
+                return;
             } catch(error) {
-                return res.status(400).send('Odmowa dostępu. Niewłaściwy token.');
+                return res.status(401).send('Odmowa dostępu. Niewłaściwy token.');
             }
         }
         req.userId = tokenData.userId;

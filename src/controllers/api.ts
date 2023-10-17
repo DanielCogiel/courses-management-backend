@@ -15,8 +15,10 @@ export const tokenTestGenerate = (req: Request<{}, {}, {userId: number}>, res: R
     res.json({token: token});
 }
 export const tokenTestVerify = (req: Request, res: Response) => {
-    const request: RequestWithId = req as RequestWithId;
-    res.json({message: `Verified token with User ID: ${request.userId}.`});
+    res.json({
+        token: res.locals.token,
+        message: `Verified token with User ID: ${res.locals.userId}.`
+    });
 }
 export const verifyDatabaseConnection = (req: Request, res: Response) => {
     coursesDatabase.query('SELECT 1', (error, data) => {

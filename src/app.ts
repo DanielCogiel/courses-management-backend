@@ -4,13 +4,17 @@ import cookieParser from "cookie-parser";
 import * as apiController from './controllers/api';
 import * as authController from './controllers/auth';
 import authenticateToken from "./middleware/authenticate-token";
+import { ALLOWED_ORIGIN } from "./config/secrets";
 
 //Create server
 const app: Express = express();
 
 //Configuration
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    credentials: true,
+    origin: ALLOWED_ORIGIN
+}));
 app.use(cookieParser());
 
 //Endpoints
