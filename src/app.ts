@@ -3,6 +3,7 @@ import cors from 'cors';
 import cookieParser from "cookie-parser";
 import * as apiController from './controllers/api';
 import * as authController from './controllers/auth';
+import * as userController from './controllers/user';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
 
@@ -30,4 +31,7 @@ app.get('/test/db', apiController.verifyDatabaseConnection);
 app.post('/api/register', authController.registerUser);
 app.post('/api/login', authController.loginUser);
 app.post('/api/refreshToken', authController.refreshToken);
+
+//USER
+app.get('/api/users/me', authenticateToken, userController.getUser);
 export default app;
