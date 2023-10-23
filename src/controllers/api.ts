@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import generateToken from "../util/generate-token";
-import RequestWithId from "../models/request-with-id";
 import coursesDatabase from "../config/db-connection";
 export const getTest = (req: Request, res: Response) => {
     res.json({

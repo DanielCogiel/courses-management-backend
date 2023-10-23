@@ -25,7 +25,7 @@ const authenticateToken = (req: any, res: Response, next: NextFunction) => {
                 return res.status(401).send('Odmowa dostępu. Niewłaściwy token.');
             }
         }
-        req.userId = tokenData.userId;
+        res.locals.userId = tokenData.userId;
         next();
     })
 }
