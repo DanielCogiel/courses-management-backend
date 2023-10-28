@@ -14,3 +14,16 @@ export const getUser = (req: Request, res: Response) => {
         });
     });
 }
+//TODO only for creators
+export const getAllCreators = (req: Request, res: Response) => {
+    coursesDatabase.query('SELECT * FROM Users WHERE role = "CREATOR"', (error, result) => {
+        return res.json(result.map((creator: any) => {
+            return {
+                id: creator.id,
+                firstName: creator.firstName,
+                lastName: creator.lastName,
+                username: creator.username
+            }
+        }));
+    })
+}

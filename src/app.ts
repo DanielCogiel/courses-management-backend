@@ -4,6 +4,7 @@ import cookieParser from "cookie-parser";
 import * as apiController from './controllers/api';
 import * as authController from './controllers/auth';
 import * as userController from './controllers/user';
+import * as courseController from './controllers/course';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
 
@@ -34,4 +35,9 @@ app.post('/api/refreshToken', authController.refreshToken);
 
 //USER
 app.get('/api/users/me', authenticateToken, userController.getUser);
+app.get('/api/users/creators', userController.getAllCreators);
+
+//COURSE
+app.post('/api/courses/add', authenticateToken, courseController.addCourse);
+
 export default app;
