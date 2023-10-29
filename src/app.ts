@@ -7,6 +7,7 @@ import * as userController from './controllers/user';
 import * as courseController from './controllers/course';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
+import upload from "./config/multer";
 
 //Create server
 const app: Express = express();
@@ -18,6 +19,7 @@ app.use(cors({
     origin: ALLOWED_ORIGIN
 }));
 app.use(cookieParser());
+app.use('/uploads', express.static('uploads'));
 
 //Endpoints
 
@@ -38,6 +40,6 @@ app.get('/api/users/me', authenticateToken, userController.getUser);
 app.get('/api/users/creators', userController.getAllCreators);
 
 //COURSE
-app.post('/api/courses/add', authenticateToken, courseController.addCourse);
+app.post('/api/courses/add', authenticateToken, upload.single('image'), courseController.addCourse);
 
 export default app;
