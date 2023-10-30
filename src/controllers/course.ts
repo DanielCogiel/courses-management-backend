@@ -9,7 +9,7 @@ export const addCourse = (req: Request, res: Response) => {
 
     coursesDatabase.query(
         'INSERT INTO Courses(owner_id, trainer_id, title, language, level, location, image_path) VALUES (?,?,?,?,?,?,?)',
-        [userId, data.trainer, data.title, data.language, data.level, data.location, req.file?.path],
+        [userId, data.trainer_id, data.title, data.language, data.level, data.location, req.file?.path],
         (error, result) => {
             if (error || !result.affectedRows) {
                 if (req.file?.path)
@@ -42,14 +42,19 @@ export const updateCourse = (req: Request, res: Response) => {
     const courseId = req.params.id;
     const data = req.body as CourseDto;
     coursesDatabase.query('SELECT * FROM Courses WHERE id = ?', [courseId], (error, result) => {
-        if (error) return res.sendStatus(500);
+        if (error) {
+            if (req.file?.path) {
+                fs.unlink(req.file?.path, error => console.log(error));
+            }
+            return res.sendStatus(500);
+        }
         const originalImagePath = result[0].image_path;
 
         coursesDatabase.query(
-            'UPDATE Courses SET trainer_id = ?, title = ?, language = ?, level = ?, location = ?, image_path = ?) WHERE id = ?',
-            [data.trainer, data.title, data.language, data.level, data.location, req.file?.path ? req.file.path : originalImagePath, courseId],
+            'UPDATE Courses SET trainer_id = ?, title = ?, language = ?, level = ?, location = ?, image_path = ? WHERE id = ?',
+            [data.trainer_id, data.title, data.language, data.level, data.location, req.file?.path ? req.file.path : originalImagePath, courseId],
             (error, result) => {
-                if (error || !result.affectedRows) {
+                if (error) {
                     if (req.file?.path)
                         fs.unlink(req.file?.path, error => console.log(error));
                     return res.sendStatus(500);

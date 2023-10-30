@@ -10,7 +10,7 @@ interface CourseDto {
     language: Language,
     level: Level,
     location: string,
-    trainer: string,
+    trainer_id: string,
     datetimes: string;
 }
 export default CourseDto;
