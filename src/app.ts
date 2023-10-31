@@ -40,6 +40,7 @@ app.get('/api/users/me', authenticateToken, userController.getUser);
 app.get('/api/users/creators', userController.getAllCreators);
 
 //COURSE
+app.get('/api/courses/all', authenticateToken, courseController.getAllCourses);
 app.get('/api/courses/:id', authenticateToken, courseController.getCourse);
 app.post('/api/courses/add', authenticateToken, upload.single('image'), courseController.addCourse);
 app.put('/api/courses/edit/:id', authenticateToken, upload.single('image'), courseController.updateCourse);
