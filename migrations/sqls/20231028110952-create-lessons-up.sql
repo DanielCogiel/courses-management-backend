@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS Lessons(
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    course_id INT NOT NULL,
+    date DATE NOT NULL,
+    timeStart TIME NOT NULL,
+    timeFinish TIME NOT NULL,
+    FOREIGN KEY(course_id) REFERENCES Courses(id) ON DELETE CASCADE
+);
