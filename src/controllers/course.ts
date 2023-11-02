@@ -129,3 +129,22 @@ export const getAllCourses = (req: Request, res: Response) => {
             })
         })
 }
+
+export const deleteCourse = (req: Request, res: Response) => {
+    const userId = res.locals.userId;
+    const courseId = req.params.id;
+
+    coursesDatabase.query('SELECT Courses.image_path FROM Courses WHERE id = ?', [courseId], (error, result) => {
+        if (error || !result.length)
+            return res.sendStatus(500);
+        const imagePath = result[0].image_path;
+
+        coursesDatabase.query('DELETE FROM Courses WHERE id = ? AND owner_id = ?', [courseId, userId], (error, result) => {
+            if (error || !result.affectedRows)
+                return res.sendStatus(500);
+            if (imagePath)
+                fs.unlink(imagePath, error => console.log(error));
+            return res.json({message: 'Pomyślnie usunięto kurs.'});
+        })
+    })
+}
