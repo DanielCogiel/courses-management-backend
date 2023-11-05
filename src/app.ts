@@ -5,6 +5,7 @@ import * as apiController from './controllers/api';
 import * as authController from './controllers/auth';
 import * as userController from './controllers/user';
 import * as courseController from './controllers/course';
+import * as enrollController from './controllers/enroll';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
 import upload from "./config/multer";
@@ -40,7 +41,13 @@ app.get('/api/users/me', authenticateToken, userController.getUser);
 app.get('/api/users/creators', userController.getAllCreators);
 
 //COURSE
+app.get('/api/courses/all', authenticateToken, courseController.getAllCourses);
 app.get('/api/courses/:id', authenticateToken, courseController.getCourse);
 app.post('/api/courses/add', authenticateToken, upload.single('image'), courseController.addCourse);
 app.put('/api/courses/edit/:id', authenticateToken, upload.single('image'), courseController.updateCourse);
+app.delete('/api/courses/delete/:id', authenticateToken, courseController.deleteCourse);
+
+//ENROLLED
+app.post('/api/enroll/:id', authenticateToken, enrollController.addUserAsAttendant);
+app.delete('/api/leave/:id', authenticateToken, enrollController.leaveCourse);
 export default app;

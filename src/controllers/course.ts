@@ -107,3 +107,44 @@ export const getCourse = (req: Request, res: Response) => {
         })
     })
 }
+
+export const getAllCourses = (req: Request, res: Response) => {
+    let data: any[] = [];
+    const userId = res.locals.userId;
+    coursesDatabase.query('SELECT Courses.id AS course_id, Enrolled.user_id AS enroll_id, Courses.owner_id AS owner_id FROM Enrolled RIGHT JOIN Courses ON Enrolled.course_id = Courses.id WHERE Courses.owner_id = ? OR Enrolled.user_id = ?;',
+        [userId, userId], (error, bindedCoursesData) => {
+            coursesDatabase.query('SELECT Courses.id, Courses.level, Users.firstName, Users.lastName, Courses.title, Courses.language, Courses.location, Courses.image_path FROM Courses JOIN Users ON Courses.trainer_id = Users.id', [],
+                (error, result) => {
+                if (error)
+                    res.sendStatus(500);
+
+                result.map((course: any) => {
+                    data = [...data, {
+                        ...course,
+                        isEnrolled: !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.enroll_id === userId),
+                        isOwner: !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.owner_id === userId),
+                    }]
+                })
+                res.json(data);
+            })
+        })
+}
+
+export const deleteCourse = (req: Request, res: Response) => {
+    const userId = res.locals.userId;
+    const courseId = req.params.id;
+
+    coursesDatabase.query('SELECT Courses.image_path FROM Courses WHERE id = ?', [courseId], (error, result) => {
+        if (error || !result.length)
+            return res.sendStatus(500);
+        const imagePath = result[0].image_path;
+
+        coursesDatabase.query('DELETE FROM Courses WHERE id = ? AND owner_id = ?', [courseId, userId], (error, result) => {
+            if (error || !result.affectedRows)
+                return res.sendStatus(500);
+            if (imagePath)
+                fs.unlink(imagePath, error => console.log(error));
+            return res.json({message: 'Pomyślnie usunięto kurs.'});
+        })
+    })
+}
