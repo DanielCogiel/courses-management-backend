@@ -46,6 +46,9 @@ app.get('/api/courses/:id', authenticateToken, courseController.getCourse);
 app.post('/api/courses/add', authenticateToken, upload.single('image'), courseController.addCourse);
 app.put('/api/courses/edit/:id', authenticateToken, upload.single('image'), courseController.updateCourse);
 app.delete('/api/courses/delete/:id', authenticateToken, courseController.deleteCourse);
+app.get('/api/courses/details/:id', authenticateToken, courseController.getCourseDetails);
+app.get('/api/courses/attendants/:id', authenticateToken, courseController.getCourseAttendants);
+app.get('/api/courses/lessons/:id', authenticateToken, courseController.getCourseLessons);
 
 //ENROLLED
 app.post('/api/enroll/:id', authenticateToken, enrollController.addUserAsAttendant);

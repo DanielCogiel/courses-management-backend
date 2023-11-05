@@ -20,8 +20,8 @@ export const addCourse = (req: Request, res: Response) => {
             const courseId = result.insertId;
             JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
                 coursesDatabase.query(
-                    'INSERT INTO Lessons(course_id, date, timeStart, timeFinish) VALUES(?,?,?,?)',
-                    [courseId, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
+                    'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
+                    [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
                     (error, result) => {
                         if (error || !result.affectedRows) {
                             if (req.file?.path)
@@ -69,8 +69,8 @@ export const updateCourse = (req: Request, res: Response) => {
 
                     JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
                         coursesDatabase.query(
-                            'INSERT INTO Lessons(course_id, date, timeStart, timeFinish) VALUES(?,?,?,?)',
-                            [courseId, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
+                            'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
+                            [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
                             (error, result) => {
                                 if (error || !result.affectedRows) {
                                     if (req.file?.path)
@@ -146,5 +146,42 @@ export const deleteCourse = (req: Request, res: Response) => {
                 fs.unlink(imagePath, error => console.log(error));
             return res.json({message: 'Pomyślnie usunięto kurs.'});
         })
+    })
+}
+
+export const getCourseDetails = (req: Request, res: Response) => {
+    const courseId = req.params.id;
+    coursesDatabase.query(
+        'SELECT Courses.title, Courses.language, Courses.level, Courses.location, Courses.image_path, Owners.firstName as ownerFirstName, Owners.lastName as ownerLastName, Trainers.firstName as trainerFirstName, Trainers.lastName as trainerLastName \n' +
+        'FROM Courses AS Courses\n' +
+        'JOIN Users as Owners ON Courses.owner_id = Owners.id \n' +
+        'JOIN Users as Trainers ON Courses.trainer_id = Trainers.id \n' +
+        'WHERE Courses.id = ?', [courseId], (error, result) => {
+        if (error)
+            return res.sendStatus(500);
+        return res.json(result[0]);
+    })
+}
+
+export const getCourseAttendants = (req: Request, res: Response) => {
+    const courseId = req.params.id;
+    coursesDatabase.query('SELECT Users.username, Users.firstName, Users.lastName FROM Users \n' +
+        'JOIN Enrolled ON Users.id = Enrolled.user_id \n' +
+        'WHERE Enrolled.course_id = ?', [courseId], (error, result) => {
+        if (error)
+            return res.sendStatus(500);
+        return res.json(result);
+    })
+}
+
+export const getCourseLessons = (req: Request, res: Response) => {
+    const courseId = req.params.id;
+    coursesDatabase.query('SELECT * FROM Lessons WHERE Lessons.course_id = ?', [courseId], (error, result) => {
+        if (error)
+            return res.sendStatus(500);
+        return res.json(result.map((lesson: any) => {
+            const {id, course_id, ...data} = lesson;
+            return data;
+        }));
     })
 }
