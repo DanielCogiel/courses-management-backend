@@ -125,8 +125,33 @@ export const getAllCourses = (req: Request, res: Response) => {
                         isOwner: !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.owner_id === userId),
                     }]
                 })
-                res.json(data);
+                return res.json(data);
             })
+        })
+}
+export const getPersonalCourses = (req: Request, res: Response) => {
+    let data: any[] = [];
+    const userId = res.locals.userId;
+    coursesDatabase.query('SELECT Courses.id AS course_id, Enrolled.user_id AS enroll_id, Courses.owner_id AS owner_id FROM Enrolled RIGHT JOIN Courses ON Enrolled.course_id = Courses.id WHERE Courses.owner_id = ? OR Enrolled.user_id = ?;',
+        [userId, userId], (error, bindedCoursesData) => {
+            coursesDatabase.query('SELECT Courses.id, Courses.level, Users.firstName, Users.lastName, Courses.title, Courses.language, Courses.location, Courses.image_path FROM Courses JOIN Users ON Courses.trainer_id = Users.id', [],
+                (error, result) => {
+                    if (error)
+                        return res.sendStatus(500);
+
+                    result.forEach((course: any) => {
+                        const isEnrolled = !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.enroll_id === userId);
+                        const isOwner = !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.owner_id === userId);
+                        if (isEnrolled || isOwner) {
+                            data = [...data, {
+                                ...course,
+                                isEnrolled: isEnrolled,
+                                isOwner: isOwner
+                            }]
+                        }
+                    })
+                    return res.json(data);
+                })
         })
 }
 
