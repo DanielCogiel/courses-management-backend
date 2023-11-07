@@ -27,3 +27,20 @@ export const getAllCreators = (req: Request, res: Response) => {
         }));
     })
 }
+
+export const getAllUsers = (req: Request, res: Response) => {
+    coursesDatabase.query('SELECT Users.id, Users.firstName, Users.lastName, Users.email, Users.username FROM Users', (error, result) => {
+        if (error)
+            return res.sendStatus(500);
+        return res.json(result);
+    })
+}
+
+export const deleteUser = (req: Request, res: Response) => {
+    const userId = req.params.id;
+    coursesDatabase.query('DELETE FROM Users WHERE id = ?', [userId], (error, result) => {
+        if (error || !result.affectedRows)
+            return res.sendStatus(500);
+        return res.json({message: 'Udało się usunąć użytkownika.'});
+    })
+}

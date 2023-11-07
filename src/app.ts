@@ -38,7 +38,9 @@ app.post('/api/refreshToken', authController.refreshToken);
 
 //USER
 app.get('/api/users/me', authenticateToken, userController.getUser);
-app.get('/api/users/creators', userController.getAllCreators);
+app.get('/api/users/creators', authenticateToken, userController.getAllCreators);
+app.get('/api/users', authenticateToken, userController.getAllUsers);
+app.delete('/api/users/delete/:id', authenticateToken, userController.deleteUser);
 
 //COURSE
 app.get('/api/courses/all', authenticateToken, courseController.getAllCourses);
