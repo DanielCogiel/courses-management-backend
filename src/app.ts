@@ -35,6 +35,7 @@ app.get('/test/db', apiController.verifyDatabaseConnection);
 app.post('/api/register', authController.registerUser);
 app.post('/api/login', authController.loginUser);
 app.post('/api/refreshToken', authController.refreshToken);
+app.put('/api/changePassword/:username', authController.changeUsersPassword);
 
 //USER
 app.get('/api/users/me', authenticateToken, userController.getUser);

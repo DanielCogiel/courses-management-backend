@@ -29,7 +29,7 @@ export const getAllCreators = (req: Request, res: Response) => {
 }
 
 export const getAllUsers = (req: Request, res: Response) => {
-    coursesDatabase.query('SELECT Users.id, Users.firstName, Users.lastName, Users.email, Users.username FROM Users', (error, result) => {
+    coursesDatabase.query('SELECT Users.id, Users.role, Users.firstName, Users.lastName, Users.email, Users.username FROM Users', (error, result) => {
         if (error)
             return res.sendStatus(500);
         return res.json(result);
