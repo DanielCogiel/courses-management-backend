@@ -9,6 +9,7 @@ export interface Datetime {
 }
 interface CourseDto {
     title: string,
+    description: string,
     language: Language,
     level: Level,
     location: string,
