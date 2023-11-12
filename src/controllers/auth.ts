@@ -12,24 +12,24 @@ export const registerUser = (req: Request, res: Response) => {
     const user: UserDto = req.body;
 
     if (user.password !== user.confirmPassword)
-        return res.status(422).json({message: 'Passwords do not match.'});
+        return res.status(422).json({message: 'Hasła nie są takie same.'});
 
     hashPassword(user.password, (hashError, hashedPassword) => {
         if (!hashedPassword)
-            return res.status(500).json({message: 'Internal server error.'})
+            return res.sendStatus(500);
 
         coursesDatabase.query('SELECT * FROM Users WHERE username = ?', [user.username], ((error, results) => {
             if (error)
-                return res.status(500).json({message: 'Internal server error.'})
+                return res.sendStatus(500);
             if (results.length > 0)
-                return res.status(409).json({message: `User ${user.username} already exists.`})
+                return res.status(409).json({message: `Użytkownik ${user.username} już istnieje.`})
 
             const userData = formatUser(user, hashedPassword);
             coursesDatabase.query('INSERT INTO Users(username, password, firstName, lastName, email, role) VALUES (?, ?, ?, ?, ?, ?)',
                 [...userData], (error, result) => {
                     if (error)
-                        return res.status(500).json({message: 'Error inserting user into database.'});
-                    return res.json({message: 'User added succesfully.'})
+                        return res.sendStatus(500);
+                    return res.json({message: 'Pomyślnie zarejestrowano użytkownika.'})
                 })
         }));
     })
@@ -79,4 +79,24 @@ export const refreshToken = (req: Request, res: Response) => {
     } catch (error) {
         return res.status(400).json({message: 'Odmowa dostępu. Niewłaściwy token.'});
     }
+}
+
+export const changeUsersPassword = (req: Request, res: Response) => {
+    const username = req.params.username;
+    const passwordData: {password: string, confirmPassword: string} = req.body;
+
+    if (passwordData.password !== passwordData.confirmPassword)
+        return res.status(422).json({message: 'Hasła nie są takie same.'});
+
+    hashPassword(passwordData.password, (hashError, hashedPassword) => {
+        if (!hashedPassword)
+            return res.sendStatus(500);
+        coursesDatabase.query(
+            'UPDATE Users SET password = ? WHERE Users.username = ?', [hashedPassword, username],
+            (error, result) => {
+                if (error || !result.affectedRows)
+                    return res.sendStatus(500);
+                return res.json({message: 'Zmieniono hasło użytkownika.'})
+            })
+    })
 }
