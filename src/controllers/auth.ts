@@ -100,3 +100,18 @@ export const changeUsersPassword = (req: Request, res: Response) => {
             })
     })
 }
+
+export const changeUserRole = (req: Request, res: Response) => {
+    const username = req.params.username;
+    const role = req.body.role;
+
+    coursesDatabase.query(
+        'UPDATE Users SET role = ? WHERE Users.username = ?',
+        [role, username],
+        (error, result) => {
+            if (error)
+                return res.sendStatus(500);
+            return res.json({ message: 'Pomyślnie zmieniono uprawnienia użytkownika.' });
+        }
+    )
+}
