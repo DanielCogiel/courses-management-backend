@@ -36,11 +36,19 @@ export const getAllUsers = (req: Request, res: Response) => {
     })
 }
 
-export const deleteUser = (req: Request, res: Response) => {
-    const userId = req.params.id;
+const _deleteAccount = (res: Response, userId: string, byToken: boolean = false) => {
     coursesDatabase.query('DELETE FROM Users WHERE id = ?', [userId], (error, result) => {
         if (error || !result.affectedRows)
             return res.sendStatus(500);
-        return res.json({message: 'Udało się usunąć użytkownika.'});
+        return res.json({message: `Udało się usunąć ${byToken ? 'konto' : 'użytkownika'}.`});
     })
+}
+
+export const deleteUser = (req: Request, res: Response) => {
+    const userId = req.params.id;
+    _deleteAccount(res, userId);
+}
+export const deleteMyUser = (req: Request, res: Response) => {
+    const userId = res.locals.userId;
+    _deleteAccount(res, userId, true);
 }

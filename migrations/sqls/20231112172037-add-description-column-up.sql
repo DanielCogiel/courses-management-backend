@@ -1,0 +1,1 @@
+ALTER TABLE Courses ADD description NVARCHAR(1000);

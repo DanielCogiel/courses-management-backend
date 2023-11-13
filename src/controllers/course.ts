@@ -8,8 +8,8 @@ export const addCourse = (req: Request, res: Response) => {
     const userId = res.locals.userId;
 
     coursesDatabase.query(
-        'INSERT INTO Courses(owner_id, trainer_id, title, language, level, location, image_path) VALUES (?,?,?,?,?,?,?)',
-        [userId, data.trainer_id, data.title, data.language, data.level, data.location, req.file?.path],
+        'INSERT INTO Courses(owner_id, trainer_id, title, description, language, level, location, image_path) VALUES (?,?,?,?,?,?,?,?)',
+        [userId, data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path],
         (error, result) => {
             if (error || !result.affectedRows) {
                 if (req.file?.path)
@@ -51,8 +51,8 @@ export const updateCourse = (req: Request, res: Response) => {
         const originalImagePath = result[0].image_path;
 
         coursesDatabase.query(
-            'UPDATE Courses SET trainer_id = ?, title = ?, language = ?, level = ?, location = ?, image_path = ? WHERE id = ?',
-            [data.trainer_id, data.title, data.language, data.level, data.location, req.file?.path ? req.file.path : originalImagePath, courseId],
+            'UPDATE Courses SET trainer_id = ?, title = ?, description = ?, language = ?, level = ?, location = ?, image_path = ? WHERE id = ?',
+            [data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path ? req.file.path : originalImagePath, courseId],
             (error, result) => {
                 if (error) {
                     if (req.file?.path)
@@ -177,7 +177,7 @@ export const deleteCourse = (req: Request, res: Response) => {
 export const getCourseDetails = (req: Request, res: Response) => {
     const courseId = req.params.id;
     coursesDatabase.query(
-        'SELECT Courses.title, Courses.language, Courses.level, Courses.location, Courses.image_path, Owners.firstName as ownerFirstName, Owners.lastName as ownerLastName, Trainers.firstName as trainerFirstName, Trainers.lastName as trainerLastName \n' +
+        'SELECT Courses.title, Courses.description, Courses.language, Courses.level, Courses.location, Courses.image_path, Owners.firstName as ownerFirstName, Owners.lastName as ownerLastName, Trainers.firstName as trainerFirstName, Trainers.lastName as trainerLastName \n' +
         'FROM Courses AS Courses\n' +
         'JOIN Users as Owners ON Courses.owner_id = Owners.id \n' +
         'JOIN Users as Trainers ON Courses.trainer_id = Trainers.id \n' +

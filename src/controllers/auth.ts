@@ -81,22 +81,44 @@ export const refreshToken = (req: Request, res: Response) => {
     }
 }
 
-export const changeUsersPassword = (req: Request, res: Response) => {
-    const username = req.params.username;
-    const passwordData: {password: string, confirmPassword: string} = req.body;
-
-    if (passwordData.password !== passwordData.confirmPassword)
+const _changePassword = (res: Response, username: string, passwords: {password: string, confirmPassword: string}, byId: boolean = false) => {
+    if (passwords.password !== passwords.confirmPassword)
         return res.status(422).json({message: 'Hasła nie są takie same.'});
-
-    hashPassword(passwordData.password, (hashError, hashedPassword) => {
+    console.log(username)
+    hashPassword(passwords.password, (hashError, hashedPassword) => {
         if (!hashedPassword)
             return res.sendStatus(500);
         coursesDatabase.query(
-            'UPDATE Users SET password = ? WHERE Users.username = ?', [hashedPassword, username],
+            `UPDATE Users SET password = ? WHERE Users.${byId ? 'id' : 'username'} = ?`, [hashedPassword, username],
             (error, result) => {
                 if (error || !result.affectedRows)
                     return res.sendStatus(500);
                 return res.json({message: 'Zmieniono hasło użytkownika.'})
             })
     })
+}
+
+export const changeUsersPassword = (req: Request, res: Response) => {
+    const username = req.params.username;
+    _changePassword(res, username, req.body);
+}
+
+export const changeMyPassword = (req: Request, res: Response) => {
+    const id = res.locals.userId;
+    _changePassword(res, id, req.body, true);
+}
+
+export const changeUserRole = (req: Request, res: Response) => {
+    const username = req.params.username;
+    const role = req.body.role;
+
+    coursesDatabase.query(
+        'UPDATE Users SET role = ? WHERE Users.username = ?',
+        [role, username],
+        (error, result) => {
+            if (error)
+                return res.sendStatus(500);
+            return res.json({ message: 'Pomyślnie zmieniono uprawnienia użytkownika.' });
+        }
+    )
 }
