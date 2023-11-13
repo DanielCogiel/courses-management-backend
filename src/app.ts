@@ -6,6 +6,7 @@ import * as authController from './controllers/auth';
 import * as userController from './controllers/user';
 import * as courseController from './controllers/course';
 import * as enrollController from './controllers/enroll';
+import * as permissionController from './controllers/permission';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
 import upload from "./config/multer";
@@ -35,6 +36,7 @@ app.get('/test/db', apiController.verifyDatabaseConnection);
 app.post('/api/register', authController.registerUser);
 app.post('/api/login', authController.loginUser);
 app.post('/api/refreshToken', authController.refreshToken);
+app.put('/api/changePassword/mine', authenticateToken, authController.changeMyPassword);
 app.put('/api/changePassword/:username', authenticateToken, authController.changeUsersPassword);
 app.put('/api/changeRole/:username', authenticateToken, authController.changeUserRole);
 
@@ -42,6 +44,7 @@ app.put('/api/changeRole/:username', authenticateToken, authController.changeUse
 app.get('/api/users/me', authenticateToken, userController.getUser);
 app.get('/api/users/creators', authenticateToken, userController.getAllCreators);
 app.get('/api/users', authenticateToken, userController.getAllUsers);
+app.delete('/api/users/delete/me', authenticateToken, userController.deleteMyUser);
 app.delete('/api/users/delete/:id', authenticateToken, userController.deleteUser);
 
 //COURSE
@@ -58,4 +61,7 @@ app.get('/api/courses/lessons/:id', authenticateToken, courseController.getCours
 //ENROLLED
 app.post('/api/enroll/:id', authenticateToken, enrollController.addUserAsAttendant);
 app.delete('/api/leave/:id', authenticateToken, enrollController.leaveCourse);
+
+//PERMISSIONS
+app.get('/api/permissions/deleteAccount', authenticateToken, permissionController.canAdminDeleteAccount);
 export default app;
