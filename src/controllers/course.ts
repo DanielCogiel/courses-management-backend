@@ -2,43 +2,53 @@ import { Request, Response } from "express";
 import CourseDto, { Datetime } from "../dtos/course-dto";
 import coursesDatabase from "../config/db-connection";
 import fs from 'fs';
-import { dateFormatter } from "../util/date-formatter";
-import { parseDateTimeStrings } from "../util/parse-datetime-strings";
 import { sortDatabaseLessons } from "../util/sort-database-lessons";
+import { validateLessonOverlapping } from "../util/validate-lesson-overlap";
 
 export const addCourse = (req: Request, res: Response) => {
     const data = req.body as CourseDto;
     const userId = res.locals.userId;
 
-    coursesDatabase.query(
-        'INSERT INTO Courses(owner_id, trainer_id, title, description, language, level, location, image_path) VALUES (?,?,?,?,?,?,?,?)',
-        [userId, data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path],
-        (error, result) => {
-            if (error || !result.affectedRows) {
-                if (req.file?.path)
-                    fs.unlink(req.file?.path, error => console.log(error))
-                return res.sendStatus(500);
-            }
-
-            const courseId = result.insertId;
-            JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
-                coursesDatabase.query(
-                    'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
-                    [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
-                    (error, result) => {
-                        if (error || !result.affectedRows) {
-                            if (req.file?.path)
-                                fs.unlink(req.file?.path, error => console.log(error))
-                            return res.sendStatus(500);
-                        }
-                    }
-                )
-            })
-            return res.json({
-                message: 'Udało się dodać kurs!'
+    coursesDatabase.query('SELECT Courses.title as course_title, Lessons.course_id, Lessons.title, Lessons.description, Lessons.date, Lessons.timeStart, Lessons.timeFinish FROM Lessons JOIN Courses ON Lessons.course_id = Courses.id WHERE Courses.trainer_id = ?', [data.trainer_id], (error, result) => {
+        const validation = validateLessonOverlapping(result, JSON.parse(data.datetimes));
+        if (error)
+            return res.sendStatus(500);
+        if (!validation.valid) {
+            return res.status(500).json({
+                message: validation.message
             })
         }
-    )
+
+        coursesDatabase.query(
+            'INSERT INTO Courses(owner_id, trainer_id, title, description, language, level, location, image_path) VALUES (?,?,?,?,?,?,?,?)',
+            [userId, data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path],
+            (error, result) => {
+                if (error || !result.affectedRows) {
+                    if (req.file?.path)
+                        fs.unlink(req.file?.path, error => console.log(error))
+                    return res.sendStatus(500);
+                }
+                const courseId = result.insertId;
+
+                JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
+                    coursesDatabase.query(
+                        'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
+                        [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
+                        (error, result) => {
+                            if (error || !result.affectedRows) {
+                                if (req.file?.path)
+                                    fs.unlink(req.file?.path, error => console.log(error))
+                                return res.sendStatus(500);
+                            }
+                        }
+                    )
+                })
+                return res.json({
+                    message: 'Udało się dodać kurs!'
+                })
+            }
+        )
+    })
 }
 
 export const updateCourse = (req: Request, res: Response) => {
@@ -51,47 +61,66 @@ export const updateCourse = (req: Request, res: Response) => {
             }
             return res.sendStatus(500);
         }
-        const originalImagePath = result[0].image_path;
 
-        coursesDatabase.query(
-            'UPDATE Courses SET trainer_id = ?, title = ?, description = ?, language = ?, level = ?, location = ?, image_path = ? WHERE id = ?',
-            [data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path ? req.file.path : originalImagePath, courseId],
-            (error, result) => {
-                if (error) {
-                    if (req.file?.path)
-                        fs.unlink(req.file?.path, error => console.log(error));
-                    return res.sendStatus(500);
+        coursesDatabase.query('SELECT Courses.title as course_title, Lessons.course_id, Lessons.title, Lessons.description, Lessons.date, Lessons.timeStart, Lessons.timeFinish FROM Lessons JOIN Courses ON Lessons.course_id = Courses.id WHERE Courses.trainer_id = ? AND Lessons.course_id <> ?', [data.trainer_id, courseId], (error, result) => {
+            const validation = validateLessonOverlapping(result, JSON.parse(data.datetimes));
+            if (error) {
+                if (req.file?.path) {
+                    fs.unlink(req.file?.path, error => console.log(error));
                 }
+                return res.sendStatus(500);
+            }
+            if (!validation.valid) {
+                if (req.file?.path) {
+                    fs.unlink(req.file?.path, error => console.log(error));
+                }
+                return res.status(500).json({
+                    message: validation.message
+                })
+            }
 
-                coursesDatabase.query('DELETE FROM Lessons WHERE course_id = ?', [courseId], (error, result) => {
+            const originalImagePath = result[0].image_path;
+
+            coursesDatabase.query(
+                'UPDATE Courses SET trainer_id = ?, title = ?, description = ?, language = ?, level = ?, location = ?, image_path = ? WHERE id = ?',
+                [data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path ? req.file.path : originalImagePath, courseId],
+                (error, result) => {
                     if (error) {
                         if (req.file?.path)
                             fs.unlink(req.file?.path, error => console.log(error));
                         return res.sendStatus(500);
                     }
 
-                    JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
-                        coursesDatabase.query(
-                            'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
-                            [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
-                            (error, result) => {
-                                if (error || !result.affectedRows) {
-                                    if (req.file?.path)
-                                        fs.unlink(req.file?.path, error => console.log(error))
-                                    return res.sendStatus(500);
-                                }
-                            }
-                        )
-                    })
-                    if (req.file?.path)
-                        fs.unlink(originalImagePath, error => console.log(error));
-                    return res.json({
-                        message: 'Udało się zaktualizować kurs!'
-                    })
+                    coursesDatabase.query('DELETE FROM Lessons WHERE course_id = ?', [courseId], (error, result) => {
+                        if (error) {
+                            if (req.file?.path)
+                                fs.unlink(req.file?.path, error => console.log(error));
+                            return res.sendStatus(500);
+                        }
 
-                })
-            }
-        )
+                        JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
+                            coursesDatabase.query(
+                                'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
+                                [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
+                                (error, result) => {
+                                    if (error || !result.affectedRows) {
+                                        if (req.file?.path)
+                                            fs.unlink(req.file?.path, error => console.log(error))
+                                        return res.sendStatus(500);
+                                    }
+                                }
+                            )
+                        })
+                        if (req.file?.path)
+                            fs.unlink(originalImagePath, error => console.log(error));
+                        return res.json({
+                            message: 'Udało się zaktualizować kurs!'
+                        })
+
+                    })
+                }
+            )
+        })
     })
 }
 
