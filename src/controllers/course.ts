@@ -2,6 +2,9 @@ import { Request, Response } from "express";
 import CourseDto, { Datetime } from "../dtos/course-dto";
 import coursesDatabase from "../config/db-connection";
 import fs from 'fs';
+import { dateFormatter } from "../util/date-formatter";
+import { parseDateTimeStrings } from "../util/parse-datetime-strings";
+import { sortDatabaseLessons } from "../util/sort-database-lessons";
 
 export const addCourse = (req: Request, res: Response) => {
     const data = req.body as CourseDto;
@@ -118,14 +121,25 @@ export const getAllCourses = (req: Request, res: Response) => {
                 if (error)
                     res.sendStatus(500);
 
-                result.map((course: any) => {
-                    data = [...data, {
-                        ...course,
-                        isEnrolled: !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.enroll_id === userId),
-                        isOwner: !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.owner_id === userId),
-                    }]
+                coursesDatabase.query('SELECT Lessons.course_id, Lessons.date, Lessons.timeStart, Lessons.timeFinish FROM Lessons', [], (error, lessons) => {
+                    if (error)
+                        return res.sendStatus(500);
+
+                    const sortedLessons = sortDatabaseLessons(lessons);
+                    result.map((course: any) => {
+                        const filteredLessons = sortedLessons.filter(lesson => lesson.course_id === course.id);
+                        data = [...data, {
+                            ...course,
+                            isEnrolled: !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.enroll_id === userId),
+                            isOwner: !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.owner_id === userId),
+                            firstLesson: filteredLessons?.[0],
+                            lastLesson: filteredLessons?.[filteredLessons.length - 1]
+                        }]
+                    })
+                    return res.json(data);
+
+                    // console.log(sortLessons(result));
                 })
-                return res.json(data);
             })
         })
 }
