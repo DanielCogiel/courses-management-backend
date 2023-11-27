@@ -61,6 +61,7 @@ export const updateCourse = (req: Request, res: Response) => {
             }
             return res.sendStatus(500);
         }
+        const originalImagePath = result[0].image_path;
 
         coursesDatabase.query('SELECT Courses.title as course_title, Lessons.course_id, Lessons.title, Lessons.description, Lessons.date, Lessons.timeStart, Lessons.timeFinish FROM Lessons JOIN Courses ON Lessons.course_id = Courses.id WHERE Courses.trainer_id = ? AND Lessons.course_id <> ?', [data.trainer_id, courseId], (error, result) => {
             const validation = validateLessonOverlapping(result, JSON.parse(data.datetimes));
@@ -78,8 +79,6 @@ export const updateCourse = (req: Request, res: Response) => {
                     message: validation.message
                 })
             }
-
-            const originalImagePath = result[0].image_path;
 
             coursesDatabase.query(
                 'UPDATE Courses SET trainer_id = ?, title = ?, description = ?, language = ?, level = ?, location = ?, image_path = ? WHERE id = ?',
