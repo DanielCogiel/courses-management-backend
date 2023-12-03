@@ -82,7 +82,7 @@ export const updateCourse = (req: Request, res: Response) => {
 
             coursesDatabase.query(
                 'UPDATE Courses SET trainer_id = ?, title = ?, description = ?, language = ?, level = ?, location = ?, image_path = ? WHERE id = ?',
-                [data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path ? req.file.path : originalImagePath, courseId],
+                [data.trainer_id, data.title, data.description, data.language, data.level, data.location, req.file?.path ? req.file.path : (originalImagePath ?? null), courseId],
                 (error, result) => {
                     if (error) {
                         if (req.file?.path)
@@ -110,7 +110,7 @@ export const updateCourse = (req: Request, res: Response) => {
                                 }
                             )
                         })
-                        if (req.file?.path)
+                        if (req.file?.path && originalImagePath)
                             fs.unlink(originalImagePath, error => console.log(error));
                         return res.json({
                             message: 'Udało się zaktualizować kurs!'
@@ -165,8 +165,6 @@ export const getAllCourses = (req: Request, res: Response) => {
                         }]
                     })
                     return res.json(data);
-
-                    // console.log(sortLessons(result));
                 })
             })
         })
