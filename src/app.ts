@@ -18,7 +18,6 @@ const app: Express = express();
 //Configuration
 app.use(express.json());
 app.use(cors({
-    credentials: true,
     origin: ALLOWED_ORIGIN
 }));
 app.use(cookieParser());
@@ -27,8 +26,6 @@ app.use('/uploads', express.static('uploads'));
 //Endpoints
 
 //Tests
-app.get('/test/get', apiController.getTest);
-app.post('/test/post', apiController.postTest);
 app.post('/test/token/generate', apiController.tokenTestGenerate);
 app.post('/test/token/verify', authenticateToken, apiController.tokenTestVerify);
 app.get('/test/db', apiController.verifyDatabaseConnection);
@@ -36,7 +33,6 @@ app.get('/test/db', apiController.verifyDatabaseConnection);
 //AUTH
 app.post('/api/register', authController.registerUser);
 app.post('/api/login', authController.loginUser);
-app.post('/api/refreshToken', authController.refreshToken);
 app.put('/api/changePassword/mine', authenticateToken, authController.changeMyPassword);
 app.put('/api/changePassword/:username', authenticateToken, authController.changeUsersPassword);
 app.put('/api/changeRole/:username', authenticateToken, authController.changeUserRole);
