@@ -179,18 +179,27 @@ export const getPersonalCourses = (req: Request, res: Response) => {
                     if (error)
                         return res.sendStatus(500);
 
-                    result.forEach((course: any) => {
-                        const isEnrolled = !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.enroll_id === userId);
-                        const isOwner = !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.owner_id === userId);
-                        if (isEnrolled || isOwner) {
-                            data = [...data, {
-                                ...course,
-                                isEnrolled: isEnrolled,
-                                isOwner: isOwner
-                            }]
-                        }
+                    coursesDatabase.query('SELECT Lessons.course_id, Lessons.date, Lessons.timeStart, Lessons.timeFinish FROM Lessons', [], (error, lessons) => {
+                        if (error)
+                            return res.sendStatus(500);
+
+                        const sortedLessons = sortDatabaseLessons(lessons);
+                        result.forEach((course: any) => {
+                            const isEnrolled = !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.enroll_id === userId);
+                            const isOwner = !!bindedCoursesData.find((elem: any) => elem.course_id === course.id && elem.owner_id === userId);
+                            if (isEnrolled || isOwner) {
+                                const filteredLessons = sortedLessons.filter(lesson => lesson.course_id === course.id);
+                                data = [...data, {
+                                    ...course,
+                                    isEnrolled: isEnrolled,
+                                    isOwner: isOwner,
+                                    firstLesson: filteredLessons?.[0],
+                                    lastLesson: filteredLessons?.[filteredLessons.length - 1]
+                                }]
+                            }
+                        })
+                        return res.json(data);
                     })
-                    return res.json(data);
                 })
         })
 }
