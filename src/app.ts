@@ -10,6 +10,7 @@ import * as permissionController from './controllers/permission';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
 import upload from "./config/multer";
+import { uploadImage } from "./middleware/upload-image";
 
 //Create server
 const app: Express = express();
@@ -51,8 +52,8 @@ app.delete('/api/users/delete/:id', authenticateToken, userController.deleteUser
 app.get('/api/courses/all', authenticateToken, courseController.getAllCourses);
 app.get('/api/courses/personal', authenticateToken, courseController.getPersonalCourses);
 app.get('/api/courses/:id', authenticateToken, courseController.getCourse);
-app.post('/api/courses/add', authenticateToken, upload.single('image'), courseController.addCourse);
-app.put('/api/courses/edit/:id', authenticateToken, upload.single('image'), courseController.updateCourse);
+app.post('/api/courses/add', authenticateToken, uploadImage, courseController.addCourse);
+app.put('/api/courses/edit/:id', authenticateToken, uploadImage, courseController.updateCourse);
 app.delete('/api/courses/delete/:id', authenticateToken, courseController.deleteCourse);
 app.get('/api/courses/details/:id', authenticateToken, courseController.getCourseDetails);
 app.get('/api/courses/attendants/:id', authenticateToken, courseController.getCourseAttendants);
