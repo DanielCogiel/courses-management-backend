@@ -1,14 +1,6 @@
 import { Request, Response } from "express";
 import generateToken from "../util/generate-token";
 import coursesDatabase from "../config/db-connection";
-export const getTest = (req: Request, res: Response) => {
-    res.json({
-        title: "App works"
-    });
-};
-export const postTest = (req: Request, res: Response) => {
-    res.json(req.body);
-}
 export const tokenTestGenerate = (req: Request<{}, {}, {userId: number}>, res: Response) => {
     const token = generateToken(req.body.userId);
     res.json({token: token});

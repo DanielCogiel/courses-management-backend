@@ -5,8 +5,6 @@ import bcrypt from 'bcrypt';
 import formatUser from "../util/format-user";
 import { hashPassword } from "../util/bcrypt";
 import generateToken from "../util/generate-token";
-import jwt, { JwtPayload } from "jsonwebtoken";
-import { TOKEN_KEY } from "../config/secrets";
 
 export const registerUser = (req: Request, res: Response) => {
     const user: UserDto = req.body;
@@ -55,7 +53,6 @@ export const loginUser = (req: Request, res: Response) => {
             })
 
             return res
-                .cookie('refresh-token', generateToken(result[0].id, '1d'), {secure: true, sameSite: 'none'})
                 .json({
                     message: `Witamy, ${username}!`,
                     token: generateToken(result[0].id),
@@ -63,22 +60,6 @@ export const loginUser = (req: Request, res: Response) => {
             });
         })
     })
-}
-
-export const refreshToken = (req: Request, res: Response) => {
-    const refreshToken = req.cookies['refresh-token'];
-    if (!refreshToken) return res.status(401).json({message: 'Odmowa dostępu. Brak tokenu.'});
-
-    try {
-        const decodedRefreshToken: any = jwt.verify(refreshToken, TOKEN_KEY as string);
-        const newAccessToken = generateToken(decodedRefreshToken.userId);
-
-        return res.json({
-            token: newAccessToken
-        })
-    } catch (error) {
-        return res.status(400).json({message: 'Odmowa dostępu. Niewłaściwy token.'});
-    }
 }
 
 const _changePassword = (res: Response, username: string, passwords: {password: string, confirmPassword: string}, byId: boolean = false) => {

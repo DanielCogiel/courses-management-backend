@@ -10,6 +10,7 @@ import * as permissionController from './controllers/permission';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
 import upload from "./config/multer";
+import { uploadImage } from "./middleware/upload-image";
 
 //Create server
 const app: Express = express();
@@ -17,7 +18,6 @@ const app: Express = express();
 //Configuration
 app.use(express.json());
 app.use(cors({
-    credentials: true,
     origin: ALLOWED_ORIGIN
 }));
 app.use(cookieParser());
@@ -26,8 +26,6 @@ app.use('/uploads', express.static('uploads'));
 //Endpoints
 
 //Tests
-app.get('/test/get', apiController.getTest);
-app.post('/test/post', apiController.postTest);
 app.post('/test/token/generate', apiController.tokenTestGenerate);
 app.post('/test/token/verify', authenticateToken, apiController.tokenTestVerify);
 app.get('/test/db', apiController.verifyDatabaseConnection);
@@ -35,7 +33,6 @@ app.get('/test/db', apiController.verifyDatabaseConnection);
 //AUTH
 app.post('/api/register', authController.registerUser);
 app.post('/api/login', authController.loginUser);
-app.post('/api/refreshToken', authController.refreshToken);
 app.put('/api/changePassword/mine', authenticateToken, authController.changeMyPassword);
 app.put('/api/changePassword/:username', authenticateToken, authController.changeUsersPassword);
 app.put('/api/changeRole/:username', authenticateToken, authController.changeUserRole);
@@ -51,8 +48,8 @@ app.delete('/api/users/delete/:id', authenticateToken, userController.deleteUser
 app.get('/api/courses/all', authenticateToken, courseController.getAllCourses);
 app.get('/api/courses/personal', authenticateToken, courseController.getPersonalCourses);
 app.get('/api/courses/:id', authenticateToken, courseController.getCourse);
-app.post('/api/courses/add', authenticateToken, upload.single('image'), courseController.addCourse);
-app.put('/api/courses/edit/:id', authenticateToken, upload.single('image'), courseController.updateCourse);
+app.post('/api/courses/add', authenticateToken, uploadImage, courseController.addCourse);
+app.put('/api/courses/edit/:id', authenticateToken, uploadImage, courseController.updateCourse);
 app.delete('/api/courses/delete/:id', authenticateToken, courseController.deleteCourse);
 app.get('/api/courses/details/:id', authenticateToken, courseController.getCourseDetails);
 app.get('/api/courses/attendants/:id', authenticateToken, courseController.getCourseAttendants);
