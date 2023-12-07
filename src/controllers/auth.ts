@@ -65,7 +65,7 @@ export const loginUser = (req: Request, res: Response) => {
 const _changePassword = (res: Response, username: string, passwords: {password: string, confirmPassword: string}, byId: boolean = false) => {
     if (passwords.password !== passwords.confirmPassword)
         return res.status(422).json({message: 'Hasła nie są takie same.'});
-    console.log(username)
+
     hashPassword(passwords.password, (hashError, hashedPassword) => {
         if (!hashedPassword)
             return res.sendStatus(500);
