@@ -1,0 +1,1 @@
+INSERT INTO Users(username, password, firstName, lastName, email, role) VALUES ("admin", "$2b$10$26QPRFQR50EcSf9ibydhS.UWMWrO6RHzjMywrfk1KuM1BEi4r56Vu", "Gall", "Anonim", "admin.courses@example.com", "ADMIN");
