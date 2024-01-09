@@ -30,12 +30,14 @@ export const addCourse = (req: Request, res: Response) => {
                 }
                 const courseId = result.insertId;
 
+                let isError = false;
                 JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
                     coursesDatabase.query(
                         'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
                         [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
                         (error, result) => {
-                            if (error || !result.affectedRows) {
+                            if ((error || !result.affectedRows) && !isError) {
+                                isError = true;
                                 if (req.file?.path)
                                     fs.unlink(req.file?.path, error => console.log(error))
                                 return res.sendStatus(500);
@@ -97,12 +99,14 @@ export const updateCourse = (req: Request, res: Response) => {
                             return res.sendStatus(500);
                         }
 
+                        let isError: boolean = false;
                         JSON.parse(data.datetimes).forEach((dateObj: Datetime) => {
                             coursesDatabase.query(
                                 'INSERT INTO Lessons(course_id, title, description, date, timeStart, timeFinish) VALUES(?,?,?,?,?,?)',
                                 [courseId, dateObj.title, dateObj.description, dateObj.date, dateObj.timeStart, dateObj.timeFinish],
                                 (error, result) => {
-                                    if (error || !result.affectedRows) {
+                                    if ((error || !result.affectedRows) && !isError) {
+                                        isError = true;
                                         if (req.file?.path)
                                             fs.unlink(req.file?.path, error => console.log(error))
                                         return res.sendStatus(500);
