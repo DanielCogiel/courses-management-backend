@@ -9,7 +9,6 @@ import * as enrollController from './controllers/enroll';
 import * as permissionController from './controllers/permission';
 import authenticateToken from "./middleware/authenticate-token";
 import { ALLOWED_ORIGIN } from "./config/secrets";
-import upload from "./config/multer";
 import { uploadImage } from "./middleware/upload-image";
 import verifyRole from "./middleware/verify-role";
 import Role from "./enums/role.enum";

@@ -13,7 +13,7 @@ export const tokenTestVerify = (req: Request, res: Response) => {
     });
 }
 export const verifyDatabaseConnection = (req: Request, res: Response) => {
-    coursesDatabase.query('SELECT 1', (error, data) => {
+    coursesDatabase.query('SELECT 1', (error: any, data: any) => {
         if (error) res.json({error: 'Database connection not working.'});
         res.json(data);
     })

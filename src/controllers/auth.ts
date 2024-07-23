@@ -8,6 +8,7 @@ import generateToken from "../util/generate-token";
 
 export const registerUser = (req: Request, res: Response) => {
     const user: UserDto = req.body;
+    console.log(user)
 
     if (user.password !== user.confirmPassword)
         return res.status(422).json({message: 'Hasła nie są takie same.'});
